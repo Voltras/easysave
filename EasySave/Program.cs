@@ -1,5 +1,10 @@
-﻿using System;
-static void Main(string[] args)
+﻿using EasyCli;
+
+public static class Program
 {
-    Console.WriteLine("Hello, World!");
+    public static async Task<int> Main(string[] args)
+    {
+        var app = new EasySaveCliApp();
+        return await app.RunAsync(args);
+    }
 }
