@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using System;
 using System.IO; 
+using static EasySave.Models.BackupJob;
 using EasySave.Models;
 
 namespace EasySave.Services
 {
     class BackupService
     {
-        public void ExecuteBackup(BackupJob job)
+        public void ExecuteBackup(EasySave.Models.BackupJob job)
         {
             Console.WriteLine($"demarrage du job  {job.Name}");
 
@@ -27,7 +28,7 @@ namespace EasySave.Services
             Console.WriteLine($"job {job.Name} fini");
         }
 
-        private void CopyDirectory(string sourceDir, string targetDir, BackupType type)
+        public void CopyDirectory(string sourceDir, string targetDir, BackupType type)
         {
             if (!Directory.Exists(targetDir))
             {
@@ -56,21 +57,21 @@ namespace EasySave.Services
             }
         }
 
-        private void CopyFile(string sourceFile, string destFile, BackupType type)
+        public void CopyFile(string sourceFile, string destFile, BackupType type)
         {
             try
             {
-                bool doCopy = false;
+                bool copy = false;
 
                 if (type == BackupType.Full)
                 {
-                    doCopy = true;
+                    copy = true;
                 }
                 else if (type == BackupType.Differential)
                 {
                     if (!File.Exists(destFile))
                     {
-                        doCopy = true; 
+                        copy = true; 
                     }
                     else
                     {
@@ -79,12 +80,12 @@ namespace EasySave.Services
 
                         if (sourceTime > destTime)
                         {
-                            doCopy = true;
+                            copy = true;
                         }
                     }
                 }
 
-                if (doCopy)
+                if (copy)
                 {
                     File.Copy(sourceFile, destFile, true);
 
