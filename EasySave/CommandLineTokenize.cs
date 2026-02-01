@@ -7,7 +7,7 @@ public static class CommandLineTokenizer
 {
     public static string[] Tokenize(string input)
     {
-        if (string.IsNullOrWhiteSpace(input)
+        if (string.IsNullOrWhiteSpace(input))
         {
             return Array.Empty<string>();
         }
