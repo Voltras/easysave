@@ -15,7 +15,7 @@ public sealed class CommandRouter
     {
         if (args.Length == 0)
         {
-            return await ShowHelpAsync(ctx); // Renvoie le menu d'aide lorsqu'on tape une entrée vide.
+            return await ShowHelpAsync(ctx); // Renvoie le menu help par défaut.
         }
         if (args[0].Equals("--help", StringComparison.OrdinalIgnoreCase) ||
             args[0].Equals("-h", StringComparison.OrdinalIgnoreCase))

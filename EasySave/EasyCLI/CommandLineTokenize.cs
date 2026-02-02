@@ -2,12 +2,16 @@
 using System.Text;
 
 namespace EasyCli;
-
+/*
+ * Normalisation des entrées.
+ * Grâce aux tokens, chaque séparation d'arguments par espace finit dans une liste de strings
+ * Chaque string est tokenizé pour la normalisation et l'échappement des caractères.
+ */
 public static class CommandLineTokenizer
 {
     public static string[] Tokenize(string input)
     {
-        if (string.IsNullOrWhiteSpace(input)
+        if (string.IsNullOrWhiteSpace(input))
         {
             return Array.Empty<string>();
         }
