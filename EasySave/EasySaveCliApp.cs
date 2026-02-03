@@ -1,20 +1,24 @@
-﻿using System.Globalization;
+using System.Globalization;
 using EasyCli;
+using Microsoft.Extensions.DependencyInjection;
 
 public sealed class EasySaveCliApp : CliApplication
 {
+    protected override void ConfigureServices(IServiceCollection services)
+    {
+    }
+
     protected override void ConfigureCommands(CommandRegistry registry, IServiceProvider sp)
     {
         registry.Register(new HelpCommand(registry));
         registry.Register(new ExitCommand());
-        registry.Register(new SettingsCommand());
     }
 
     protected override IText BuildText(CultureInfo culture)
     {
         var isFr = culture.TwoLetterISOLanguageName.Equals("fr", StringComparison.OrdinalIgnoreCase);
 
-        var strings = isFr // Pour debug il est possible de remplacer isFr par !isFr le temps d'implémenter le changement de langage
+        var strings = isFr
             ? new Dictionary<string, string>
             {
                 ["help.title"] = "Aide - commandes disponibles",
@@ -24,7 +28,6 @@ public sealed class EasySaveCliApp : CliApplication
                 ["error.unknown_command"] = "Commande inconnue",
                 ["help.desc"] = "Affiche le menu d'aide",
                 ["exit.desc"] = "Quitte l'application",
-                ["settings.desc"] = "Ouvre le menu de paramètres WIP",
             }
             : new Dictionary<string, string>
             {
@@ -35,7 +38,6 @@ public sealed class EasySaveCliApp : CliApplication
                 ["error.unknown_command"] = "Unknown command",
                 ["help.desc"] = "Shows the help menu",
                 ["exit.desc"] = "Exits the application",
-                ["settings.desc"] = "Opens the settings menu (WIP)",
             };
 
         return new DictionaryText(strings, culture);
