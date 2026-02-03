@@ -8,13 +8,13 @@ public sealed class HelpCommand : ICliCommand
 
     public string Name => "help";
     public IReadOnlyList<string> Aliases => ["-h", "--help"];
-    public string Description => "Show help";
+    public string Description => "help.desc";
 
     public Task<int> ExecuteAsync(CommandContext context, string[] args, CancellationToken ct)
     {
         context.Console.WriteLine(context.Text["help.title"]);
         foreach (var c in _registry.AllUnique().OrderBy(c => c.Name))
-            context.Console.WriteLine($"  {c.Name} - {c.Description}");
+            context.Console.WriteLine($"  {c.Name} - {context.Text[c.Description]}");
         return Task.FromResult(0);
     }
 }

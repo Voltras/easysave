@@ -1,8 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace EasySave.EasyCLI;
-
+namespace EasyCli;
+/*
+ * Normalisation des entrées.
+ * Grâce aux tokens, chaque séparation d'arguments par espace finit dans une liste de strings
+ * Chaque string est tokenizé pour la normalisation et l'échappement des caractères.
+ */
 public static class CommandLineTokenizer
 {
     public static string[] Tokenize(string input)

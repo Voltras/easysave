@@ -15,7 +15,7 @@ public sealed class CommandRouter
     {
         if (args.Length == 0)
         {
-            return await ShowHelpAsync(ctx); // Renvoie le menu d'aide lorsqu'on tape une entrée vide.
+            return await ShowHelpAsync(ctx); // Renvoie le menu help par défaut.
         }
         if (args[0].Equals("--help", StringComparison.OrdinalIgnoreCase) ||
             args[0].Equals("-h", StringComparison.OrdinalIgnoreCase))
@@ -38,7 +38,7 @@ public sealed class CommandRouter
         ctx.Console.WriteLine(ctx.Text["help.title"]);
         foreach(var c in _registry.AllUnique().OrderBy(c => c.Name))
         {
-            ctx.Console.WriteLine($"    {c.Name} - {c.Description}");
+            ctx.Console.WriteLine($"  {c.Name} - {ctx.Text[c.Description]}");
         }
         return Task.FromResult(0);
     }
