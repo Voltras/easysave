@@ -38,7 +38,7 @@ public sealed class CommandRouter
         ctx.Console.WriteLine(ctx.Text["help.title"]);
         foreach(var c in _registry.AllUnique().OrderBy(c => c.Name))
         {
-            ctx.Console.WriteLine($"    {c.Name} - {c.Description}");
+            ctx.Console.WriteLine($"  {c.Name} - {ctx.Text[c.Description]}");
         }
         return Task.FromResult(0);
     }
