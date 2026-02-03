@@ -10,26 +10,30 @@ namespace EasySave.Services
 {
     class BackupService
     {
-        public void ExecuteBackup(EasySave.Models.BackupJob job)
+        public void ExecuteBackup(EasySave.Models.BackupJob backupJob)
         {
-            Console.WriteLine($"demarrage du job  {job.Name}");
+            Console.WriteLine($"demarrage du job  {backupJob.Name}");
 
             // On vérifie que la source existe, sinon on arrête tout
-            if (!Directory.Exists(job.SourcePath))
+            if (!Directory.Exists(backupJob.SourcePath))
             {
-                Console.WriteLine(" le dossier source n existe pas");
+                Console.WriteLine(" le dossier source n'existe pas");
                 return;
             }
         
-
             // On lance la boucle récursive
-            CopyDirectory(job.SourcePath, job.TargetPath, job.Type);
+            CopyDirectory(backupJob);
 
-            Console.WriteLine($"job {job.Name} fini");
+            Console.WriteLine($"job {backupJob.Name} fini");
         }
 
-        public void CopyDirectory(string sourceDir, string targetDir, BackupType type)
+        public void CopyDirectory(BackupJob backupjob)
         {
+            BackupJob _backupjob = backupjob;
+            string sourceDir = backupjob.SourcePath;
+            string targetDir= backupjob.TargetPath;
+            BackupType type= backupjob.Type;
+
             if (!Directory.Exists(targetDir))
             {
                 Directory.CreateDirectory(targetDir);
@@ -42,7 +46,7 @@ namespace EasySave.Services
                 string fileName = Path.GetFileName(file);
                 string destFile = Path.Combine(targetDir, fileName);
 
-                CopyFile(file, destFile, type);
+                CopyFile(backupjob);
             }
 
             string[] subDirs = Directory.GetDirectories(sourceDir);
@@ -53,14 +57,20 @@ namespace EasySave.Services
 
                 string nextTargetDir = Path.Combine(targetDir, dirName);
 
-                CopyDirectory(subDir, nextTargetDir, type);
+                CopyDirectory(backupjob);
             }
         }
 
-        public void CopyFile(string sourceFile, string destFile, BackupType type)
+        public void CopyFile(BackupJob backupJob)
         {
+            string destfile = backupJob.TargetPath;
+            string sourcefile = backupJob.SourcePath;
+            BackupType type = backupJob.Type;
+
             try
             {
+                
+                // si condition respecter on peiu copier 
                 bool copy = false;
 
                 if (type == BackupType.Full)
@@ -69,16 +79,15 @@ namespace EasySave.Services
                 }
                 else if (type == BackupType.Differential)
                 {
-                    if (!File.Exists(destFile))
+                    if (!File.Exists(destfile))
                     {
                         copy = true; 
                     }
                     else
                     {
-                        DateTime sourceTime = File.GetLastWriteTime(sourceFile);
-                        DateTime destTime = File.GetLastWriteTime(destFile);
+                        bool isdifferent = new Md5Checker().ShouldCopy(backupJob);
 
-                        if (sourceTime > destTime)
+                        if (isdifferent)
                         {
                             copy = true;
                         }
@@ -87,15 +96,15 @@ namespace EasySave.Services
 
                 if (copy)
                 {
-                    File.Copy(sourceFile, destFile, true);
+                    File.Copy(sourcefile, destfile, true);
 
 
-                    Console.WriteLine($"[COPIE] {sourceFile} -> {destFile}");
+                    Console.WriteLine($"[COPIE] {sourcefile} -> {destfile}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erreur sur le fichier {sourceFile} : {ex.Message}");
+                Console.WriteLine($"Erreur sur le fichier {sourcefile} : {ex.Message}");
             }
         }
     }

@@ -1,0 +1,9 @@
+CopyDirectory
+// 1. Créer le dossier cible s'il n'existe pas
+// 2. Récupérer les fichiers du dossier en cours
+// Construit le chemin d'arrivée (ex: D:\Backup\fichier.txt)
+// Appelle la logique de copie unitaire
+// 3. Récupérer les sous-dossiers (RECURSIVITÉ)
+// Récupère juste le nom du dossier (ex: "Photos")
+// Construit le nouveau chemin cible (ex: D:\Backup\Photos)
+// La fonction s'appelle elle-même !
