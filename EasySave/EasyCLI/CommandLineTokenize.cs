@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace EasyCli;
+namespace EasySave.EasyCLI;
 
 public static class CommandLineTokenizer
 {
