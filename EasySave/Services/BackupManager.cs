@@ -16,8 +16,8 @@ namespace EasySave.Services
 
             // simu :2 travaux de test Hardcodé pour test
             
-            BackupJobs.Add(new BackupJob("Travail 1", @"C:\Temp\Source1", @"C:\Temp\Cible1", BackupType.Full));
-            BackupJobs.Add(new BackupJob("Travail 2", @"C:\Temp\Source2", @"C:\Temp\Cible2", BackupType.Differential));
+            BackupJobs.Add(new BackupJob("Travail 1", @"C:\Users\laara\OneDrive\Bureau\apprentissage react", @"C:\Users\laara\OneDrive\Bureau\repo_de_copie", BackupType.Full));
+            BackupJobs.Add(new BackupJob("Travail 2", @"C:\Users\laara\OneDrive\Bureau\repo_de_prelevement", @"C:\Users\laara\OneDrive\Bureau\repo_de_copie", BackupType.Differential));
         }
 
         public void RunJob(int index) 
