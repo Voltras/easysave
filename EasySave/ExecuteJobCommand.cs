@@ -1,10 +1,7 @@
 ﻿using EasyCli;
 using EasySave.Models;
 using EasySave.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Win32;
 using Spectre.Console;
-using System.Runtime.CompilerServices;
 
 public sealed class ExecuteJobCommand : ICliCommand
 {
@@ -20,28 +17,28 @@ public sealed class ExecuteJobCommand : ICliCommand
         List<BackupJob> jobs = manager.GetList();
         if (jobs.Count == 0)
         {
-            context.Console.MarkupLine("[red]Aucun job disponible.[/]");
+            context.Console.MarkupLine($"[red]{context.Text["error.NoAvailableJobs"]}[/]");
             return Task.FromResult(0);
         }
         bool sequential = args.Length > 0 && SequentialAliases.Contains(args[0]);
         if (!sequential)
         {
-            RunSingle(context.Console, jobs);
+            RunSingle(context, jobs);
             return Task.FromResult(0);
         }
 
-        RunSequentialRange(context.Console, jobs);
+        RunSequentialRange(context, jobs);
 
         return Task.FromResult(0);
     }
 
-    private void RunSingle(IAnsiConsole console, List<BackupJob> jobs)
+    private void RunSingle(CommandContext context, List<BackupJob> jobs)
     {
-        RenderJobsTable(console, jobs, startInclusive: 0);
+        RenderJobsTable(context, jobs, startInclusive: 0);
 
-        int choice = console.Prompt(
+        int choice = context.Console.Prompt(
             new SelectionPrompt<int>()
-                .Title("Choisir un job à exécuter")
+                .Title(context.Text["table.chooseJob"])
                 .AddChoices(Enumerable.Range(1, jobs.Count))
                 .UseConverter(i => $"{i} - {jobs[i - 1].Name}")
         );
@@ -49,32 +46,44 @@ public sealed class ExecuteJobCommand : ICliCommand
         int index0 = choice;
         manager.RunJob(index0);
     }
-    private void RunSequentialRange(IAnsiConsole console, List<BackupJob> jobs)
+    private void RunSequentialRange(CommandContext context, List<BackupJob> jobs)
     {
-        RenderJobsTable(console, jobs, startInclusive: 0);
+        context.Console.WriteLine(context.Text["table.executeJobDesc"]);
+        RenderJobsTable(context, jobs, startInclusive: 0);
 
-        int startChoice = console.Prompt(
-            new SelectionPrompt<int>()
-                .Title("Index de départ (séquentiel)")
-                .AddChoices(Enumerable.Range(1, jobs.Count))
-                .UseConverter(i => $"{i} - {jobs[i - 1].Name}")
-        );
+        string mode = context.Console.Prompt(
+            new SelectionPrompt<string>()
+                .Title(context.Text["executeJob.chooseSeqMode"])
+                .AddChoices(context.Text["executeJob.rangeChoice"], context.Text["executeJob.individualChoice"])
+            );
 
-        int start0 = startChoice;
+        if(mode == context.Text["executeJob.rangeChoice"])
+        {
+            int startChoice = context.Console.Prompt(
+                new SelectionPrompt<int>()
+                    .Title(context.Text["table.startSequentialTitle"])
+                    .AddChoices(Enumerable.Range(1, jobs.Count))
+                    .UseConverter(i => $"{i} - {jobs[i - 1].Name}")
+                );
 
-        RenderJobsTable(console, jobs, startInclusive: start0);
+            int start0 = startChoice;
 
-        int endChoice = console.Prompt(
-            new SelectionPrompt<int>()
-                .Title("Index de fin (séquentiel)")
-                .AddChoices(Enumerable.Range(startChoice, jobs.Count - startChoice + 1))
-                .UseConverter(i => $"{i} - {jobs[i - 1].Name}")
-        );
+            int endChoice = context.Console.Prompt(
+                new SelectionPrompt<int>()
+                    .Title(context.Text["table.endSequentialTitle"])
+                    .AddChoices(Enumerable.Range(startChoice, jobs.Count - startChoice + 1))
+                    .UseConverter(i => $"{i} - {jobs[i - 1].Name}")
+                );
 
-        int end0 = endChoice;
-        manager.RunSequential(start0, end0);
+            int end0 = endChoice;
+            manager.RunSequential(start0, end0);
+        }
+        else
+        {
+
+        }
     }
-    private static void RenderJobsTable(IAnsiConsole console, List<BackupJob> jobs, int startInclusive)
+    private static void RenderJobsTable(CommandContext context, List<BackupJob> jobs, int startInclusive)
     {
         var table = new Spectre.Console.Table()
             .AddColumn("Index")
@@ -83,7 +92,7 @@ public sealed class ExecuteJobCommand : ICliCommand
         for (int i = startInclusive; i < jobs.Count; i++)
             table.AddRow((i + 1).ToString(), jobs[i].Name);
 
-        console.Write(table);
+        context.Console.Write(table);
     }
 
     private bool ParseArgument(string argument)

@@ -1,7 +1,4 @@
-﻿using EasySave.Models;
-using System;
-using System.IO;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 
 namespace EasySave.Services
 {
@@ -13,7 +10,7 @@ namespace EasySave.Services
                 return false;
 
             if (!File.Exists(targetFilePath))
-                return true; 
+                return true;
 
             string sourceHash = CalculateHash(sourceFilePath);
             string targetHash = CalculateHash(targetFilePath);

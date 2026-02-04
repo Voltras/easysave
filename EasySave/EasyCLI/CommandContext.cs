@@ -1,5 +1,5 @@
-﻿using System.Globalization;
-using Spectre.Console;
+﻿using Spectre.Console;
+using System.Globalization;
 
 namespace EasyCli;
 
@@ -10,7 +10,7 @@ public sealed class CommandContext
     public IServiceProvider Services { get; }
     public CultureInfo Culture { get; }
 
-    public CommandContext(IAnsiConsole console, IText text,  IServiceProvider services, CultureInfo culture)
+    public CommandContext(IAnsiConsole console, IText text, IServiceProvider services, CultureInfo culture)
     {
         Console = console;
         Text = text;

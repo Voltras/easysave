@@ -1,10 +1,6 @@
 ﻿using EasyCli;
-using EasySave.Models;
 using EasySave.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Win32;
 using Spectre.Console;
-using System.Runtime.CompilerServices;
 
 public sealed class CreateJobCommand : ICliCommand
 {
@@ -18,17 +14,16 @@ public sealed class CreateJobCommand : ICliCommand
     {
         if (args.Length < 4)
         {
-            context.Console.WriteLine($"[red]{context.Text["createJob.notEnoughArgs"]}");
+            context.Console.MarkupLine($"[red]{context.Text["createJob.notEnoughArgs"]}[/]");
         }
-        if (manager.AddBackupJobInList(args[0], args[1], args[2], args[3]))
+        else if (manager.AddBackupJobInList(args[0], args[1], args[2], args[3]))
         {
-            context.Console.WriteLine(context.Text["createJob.success"]);
-            List<BackupJob> lalistemdr = manager.GetList();
-            foreach (BackupJob BckpJob in lalistemdr)
-            {
-                context.Console.WriteLine($"Debug : {BckpJob.Name}");
-            }
-        } else context.Console.WriteLine(context.Text["createJob.error"]);
+            context.Console.MarkupLine($"[green]{context.Text["createJob.success"]}[/]");
+        }
+        else
+        {
+            context.Console.MarkupLine($"[red]{context.Text["createJob.error"]}[/]");
+        }
         return Task.FromResult(0);
     }
 }

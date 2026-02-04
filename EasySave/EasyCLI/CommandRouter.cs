@@ -1,5 +1,4 @@
 ﻿using Spectre.Console;
-using System.Security.AccessControl;
 using System.Text.RegularExpressions;
 
 namespace EasyCli;
@@ -34,10 +33,10 @@ public sealed class CommandRouter
         return await cmd!.ExecuteAsync(ctx, cmdArgs, ct);
     }
 
-    private Task<int> ShowHelpAsync(CommandContext ctx) 
+    private Task<int> ShowHelpAsync(CommandContext ctx)
     {
         ctx.Console.WriteLine(ctx.Text["help.title"]);
-        foreach(var c in _registry.AllUnique().OrderBy(c => c.Name))
+        foreach (var c in _registry.AllUnique().OrderBy(c => c.Name))
         {
             ctx.Console.WriteLine($"  {c.Name} - {ctx.Text[c.Description]}");
         }

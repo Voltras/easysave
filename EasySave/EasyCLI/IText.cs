@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace EasyCli;
 
-namespace EasyCli;
 public interface IText
 {
     string this[string key] { get; }

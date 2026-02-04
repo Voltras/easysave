@@ -1,6 +1,6 @@
-using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
+using System.Globalization;
 
 namespace EasyCli;
 
@@ -69,7 +69,8 @@ public abstract class CliApplication
         int lastCode = 0;
         while (shell.Running && !ct.IsCancellationRequested)
         {
-            var userInput = AnsiConsole.Prompt(new TextPrompt<string>("> ").AllowEmpty());
+            Console.Write("> ");
+            var userInput = Console.ReadLine();
             if (userInput is null)
                 break;
 
