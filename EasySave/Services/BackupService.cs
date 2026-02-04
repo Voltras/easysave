@@ -10,6 +10,13 @@ namespace EasySave.Services
 {
     class BackupService
     {
+        private string _status = "";
+
+        public string Status
+        {
+            get { return _status; }
+
+        }
         public void ExecuteBackup(BackupJob backupJob)
         {
             Console.WriteLine($"demarrage du job  {backupJob.Name}");
@@ -17,8 +24,8 @@ namespace EasySave.Services
             // On vérifie que la source existe, sinon on arrête tout
             if (!Directory.Exists(backupJob.SourcePath))
             {
-                Console.WriteLine(" le dossier source n existe pas");
-                return;
+                throw new DirectoryNotFoundException("source directory not found");
+
             }
         
 
@@ -28,7 +35,7 @@ namespace EasySave.Services
             Console.WriteLine($"job {backupJob.Name} fini");
         }
 
-        public void CopyDirectory(string sourceDir, string targetDir, BackupType type, BackupJob backupJob)
+        private void CopyDirectory(string sourceDir, string targetDir, BackupType type, BackupJob backupJob)
         {
             if (!Directory.Exists(targetDir))
             {
@@ -57,7 +64,7 @@ namespace EasySave.Services
             }
         }
 
-        public void CopyFile(string sourceFile, string destFile, BackupType type, BackupJob backupJob)
+        private void CopyFile(string sourceFile, string destFile, BackupType type, BackupJob backupJob)
         {
             try
             {
@@ -92,8 +99,11 @@ namespace EasySave.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erreur sur le fichier {sourceFile} : {ex.Message}");
+                throw new FileNotFoundException($"Error on the File -> {sourceFile} : {ex.Message}");
+                
             }
         }
     }
 }
+
+// vvariable status take a s string initialiser a rien et des qu on met a jour 
