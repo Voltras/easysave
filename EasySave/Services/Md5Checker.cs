@@ -1,44 +1,38 @@
 ﻿using EasySave.Models;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.IO;
+using System.Security.Cryptography;
 
 namespace EasySave.Services
 {
     class Md5Checker
     {
-        public bool ShouldCopy(BackupJob backupJob)
+        public bool ShouldCopy(string sourceFilePath, string targetFilePath)
         {
-            string sourceFilePath = backupJob.SourcePath;
-            string targetFilePath = backupJob.TargetPath;
+            if (!File.Exists(sourceFilePath))
+                return false; // source introuvable -> rien à copier
 
-            if (File.Exists(targetFilePath))
-            {
-                return true;
-            }
+            if (!File.Exists(targetFilePath))
+                return true; // cible absente -> copier
 
             string sourceHash = CalculateHash(sourceFilePath);
-            Console.WriteLine("Source Hash: " + sourceHash);
             string targetHash = CalculateHash(targetFilePath);
-            Console.WriteLine("Target Hash: " + targetHash);
 
-            if (sourceHash != targetHash)
-            {
-                return true;
-            }
-
-            return false;
+            return !string.Equals(sourceHash, targetHash, StringComparison.OrdinalIgnoreCase);
         }
 
-        private string CalculateHash(string path)
+        public string CalculateHash(string path)
         {
+            if (!File.Exists(path))
+                throw new FileNotFoundException("Fichier introuvable pour le calcul du hash.", path);
 
-            using var md5 = System.Security.Cryptography.MD5.Create();
-            Console.WriteLine("Calculating MD5 for: " + path);
+            var attr = File.GetAttributes(path);
+            if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                throw new ArgumentException("Le chemin fourni est un répertoire, pas un fichier : " + path);
+
+            using var md5 = MD5.Create();
             using var stream = File.OpenRead(path);
-            Console.WriteLine("File opened successfully for hashing."+ stream);
             var hash = md5.ComputeHash(stream);
-            Console.WriteLine("Hash computed: " + hash);
             return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
         }
     }
