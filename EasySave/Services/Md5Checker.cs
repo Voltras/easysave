@@ -24,11 +24,11 @@ namespace EasySave.Services
         public string CalculateHash(string path)
         {
             if (!File.Exists(path))
-                throw new FileNotFoundException("Fichier introuvable pour le calcul du hash.", path);
+                throw new FileNotFoundException("File not found, needed to calcul the hash.", path);
 
             var attribute = File.GetAttributes(path);
             if ((attribute & FileAttributes.Directory) == FileAttributes.Directory)
-                throw new ArgumentException("Le chemin fourni est un répertoire, pas un fichier : " + path);
+                throw new ArgumentException("the following pash is a directory not a file: " + path);
 
             using var md5 = MD5.Create();
             using var stream = File.OpenRead(path);
