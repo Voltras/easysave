@@ -10,10 +10,10 @@ namespace EasySave.Services
         public bool ShouldCopy(string sourceFilePath, string targetFilePath)
         {
             if (!File.Exists(sourceFilePath))
-                return false; // source introuvable -> rien à copier
+                return false;
 
             if (!File.Exists(targetFilePath))
-                return true; // cible absente -> copier
+                return true; 
 
             string sourceHash = CalculateHash(sourceFilePath);
             string targetHash = CalculateHash(targetFilePath);
@@ -26,8 +26,8 @@ namespace EasySave.Services
             if (!File.Exists(path))
                 throw new FileNotFoundException("Fichier introuvable pour le calcul du hash.", path);
 
-            var attr = File.GetAttributes(path);
-            if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+            var attribute = File.GetAttributes(path);
+            if ((attribute & FileAttributes.Directory) == FileAttributes.Directory)
                 throw new ArgumentException("Le chemin fourni est un répertoire, pas un fichier : " + path);
 
             using var md5 = MD5.Create();

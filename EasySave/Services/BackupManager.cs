@@ -42,6 +42,18 @@ namespace EasySave.Services
         // todo gerer le max de job 5 
         public void RunSequential(int start, int end)
         {
+
+            if (start < 1 || end > BackupJobs.Count || start > end)
+            {
+                Console.WriteLine("Plage de jobs invalide.");
+                return;
+            }
+
+            if (end - start + 1 > 5)
+            {
+                Console.WriteLine("Le nombre maximum de jobs à exécuter est de 5.");
+                return;
+            }
             for (int i = start; i <= end; i++)
             {
                 RunJob(i);
