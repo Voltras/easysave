@@ -71,13 +71,13 @@ namespace EasySave.Services
                 {
                     if (!File.Exists(destFile))
                     {
-                        copy = true; 
+                        copy = true;
                     }
                     else
                     {
-                        bool isdifferent = new Md5Checker().ShouldCopy(backupJob);
+                        bool isDifferent = new Md5Checker().ShouldCopy(sourceFile, destFile);
 
-                        if (isdifferent)
+                        if (isDifferent)
                         {
                             copy = true;
                         }
@@ -87,8 +87,6 @@ namespace EasySave.Services
                 if (copy)
                 {
                     File.Copy(sourceFile, destFile, true);
-
-
                     Console.WriteLine($"[COPIE] {sourceFile} -> {destFile}");
                 }
             }

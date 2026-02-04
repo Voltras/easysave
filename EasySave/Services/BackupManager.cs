@@ -16,8 +16,8 @@ namespace EasySave.Services
 
             // simu :2 travaux de test Hardcodé pour test
             
-            BackupJobs.Add(new BackupJob("Travail 1", @"C:\Users\laara\OneDrive\Bureau\apprentissage react", @"C:\Users\laara\OneDrive\Bureau\repo_de_copie", BackupType.Full));
-            BackupJobs.Add(new BackupJob("Travail 2", @"C:\Users\laara\OneDrive\Bureau\repo_de_prelevement", @"C:\Users\laara\OneDrive\Bureau\repo_de_copie", BackupType.Differential));
+            BackupJobs.Add(new BackupJob("Travail 1", @"C:\Users\laara\OneDrive\Bureau\Seminaire science fondamentale de l'ingénieur\prosit 2", @"C:\Users\laara\OneDrive\Bureau\repo_de_copie", BackupType.Full));
+            BackupJobs.Add(new BackupJob("Travail 2", @"C:\Users\laara\OneDrive\Bureau\english", @"C:\Users\laara\OneDrive\Bureau\Bloc_Csharp\Projet\TEST", BackupType.Full));
         }
 
         public void RunJob(int index) 
@@ -38,6 +38,8 @@ namespace EasySave.Services
         }
 
         // ex lancer une plage (1-3)
+
+        // todo gerer le max de job 5 
         public void RunSequential(int start, int end)
         {
             for (int i = start; i <= end; i++)
