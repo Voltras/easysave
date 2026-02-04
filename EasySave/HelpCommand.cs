@@ -1,4 +1,5 @@
 ﻿using EasyCli;
+using Spectre.Console;
 
 public sealed class HelpCommand : ICliCommand
 {
@@ -13,8 +14,12 @@ public sealed class HelpCommand : ICliCommand
     public Task<int> ExecuteAsync(CommandContext context, string[] args, CancellationToken ct)
     {
         context.Console.WriteLine(context.Text["help.title"]);
+        var table = new Table();
+        table.AddColumn("Commande");
+        table.AddColumn("Description");
         foreach (var c in _registry.AllUnique().OrderBy(c => c.Name))
-            context.Console.WriteLine($"  {c.Name} - {context.Text[c.Description]}");
+            table.AddRow(c.Name, context.Text[c.Description]);
+        context.Console.Write(table);
         return Task.FromResult(0);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Security.AccessControl;
+﻿using Spectre.Console;
+using System.Security.AccessControl;
 using System.Text.RegularExpressions;
 
 namespace EasyCli;
@@ -27,7 +28,7 @@ public sealed class CommandRouter
 
         if (!_registry.TryResolve(cmdName, out var cmd))
         {
-            ctx.Console.WriteError(ctx.Text["error.unknown_command"] + ": " + cmdName);
+            ctx.Console.WriteLine(ctx.Text["error.unknown_command"] + ": " + cmdName);
             return 2;
         }
         return await cmd!.ExecuteAsync(ctx, cmdArgs, ct);
