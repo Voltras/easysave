@@ -1,10 +1,31 @@
-﻿using EasyCli;
+﻿using EasySave.Models;
+using EasySave.Services;
+using System;
+using System.IO;
 
-public static class Program
+namespace EasySave
 {
-    public static async Task<int> Main(string[] args)
+    class Program
     {
-        var app = new EasySaveCliApp();
-        return await app.RunAsync(args);
+        static void Main(string[] args)
+        {
+            // Initialisation du managerr
+            BackupManager manager = new BackupManager();
+
+
+            Console.WriteLine("Console Mode");
+            Console.WriteLine("entrer le numéro du travail (ex: 1) :");
+
+            string input = Console.ReadLine(); 
+            if (int.TryParse(input, out int jobIndex))
+            {
+                manager.RunSequential(0,2);
+            }
+            else
+            {
+                Console.WriteLine("mauvaise entrée");
+            }
+
+        }
     }
 }
