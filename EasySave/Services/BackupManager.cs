@@ -67,6 +67,10 @@ namespace EasySave.Services
 
         public bool AddBackupJobInList(string name , string sourcePath, string targetPath, string type)
         {
+            if (BackupJobs.Count() >= 5)
+            {
+                return false;
+            }
             if (AliasesBackupTypeFull.Contains(type.ToLowerInvariant()))
             {
                 BackupType objecttype = BackupType.Full;
@@ -89,7 +93,7 @@ namespace EasySave.Services
 
         }
 
-        public void ListAllJobs(List<BackupJob>) 
+        public void ListAllJobs(List<BackupJob> BackupJobs) 
         {
             foreach (var backupjob in BackupJobs)
             {

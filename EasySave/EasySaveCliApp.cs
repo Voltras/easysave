@@ -6,7 +6,7 @@ using EasySave.Services;
 
 public sealed class EasySaveCliApp : CliApplication
 {
-    public static List<BackupJob> _backupJobs => [];
+    private BackupManager manager = new BackupManager();
     protected override void ConfigureServices(IServiceCollection services)
     {
     }
@@ -14,8 +14,9 @@ public sealed class EasySaveCliApp : CliApplication
     protected override void ConfigureCommands(CommandRegistry registry, IServiceProvider sp)
     {
         registry.Register(new HelpCommand(registry));
-        //registry.Register(new CreateJobCommand(_backupJobs));
+        registry.Register(new CreateJobCommand(manager));
         registry.Register(new ExitCommand());
+        registry.Register(new ExecuteJobCommand(manager));
     }
 
     protected override IText BuildText(CultureInfo culture)
