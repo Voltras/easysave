@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
+using Spectre.Console;
 
 namespace EasyCli;
 
@@ -9,7 +10,14 @@ public abstract class CliApplication
     {
         var services = new ServiceCollection();
 
-        services.AddSingleton<IConsole, SystemConsole>();
+        // services.AddSingleton<IConsole, SystemConsole>();
+        services.AddSingleton<IAnsiConsole>(_ =>
+        AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Ansi = AnsiSupport.Detect,
+            ColorSystem = ColorSystemSupport.Detect,
+            Interactive = InteractionSupport.Detect,
+        }));
         services.AddSingleton<CommandRegistry>();
         services.AddSingleton<CommandRouter>();
         services.AddSingleton<ShellState>();
@@ -18,13 +26,11 @@ public abstract class CliApplication
 
         using var sp = services.BuildServiceProvider();
 
-        var console = sp.GetRequiredService<IConsole>();
+        var console = sp.GetRequiredService<IAnsiConsole>();
         var shell = sp.GetRequiredService<ShellState>();
 
         // Récup des arguments pour mode non-interactif (utile surtout pour --lang)
         var parsed = ParseGlobalOptions(args);
-        // TODO ? : Ajouter une commande settings qui permet de redéfinir à chaud les paramètres qui persisteraient.
-        // var settings = sp.GetService<AppSettings>();
 
         // redéfinition de la culture si on l'appelle dans le mode non interactif
         var culture = parsed.CultureOverride ?? CultureInfo.CurrentUICulture;
@@ -50,8 +56,7 @@ public abstract class CliApplication
         int lastCode = 0;
         while (shell.Running && !ct.IsCancellationRequested)
         {
-            console.Write("> ");
-            var userInput = console.ReadLine();
+            var userInput = AnsiConsole.Prompt(new TextPrompt<string>("> ").AllowEmpty());
             if (userInput is null)
                 break;
 

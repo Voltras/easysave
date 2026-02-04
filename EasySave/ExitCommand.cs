@@ -1,5 +1,6 @@
 ﻿using EasyCli;
 using Microsoft.Extensions.DependencyInjection;
+using Spectre.Console;
 
 public sealed class ExitCommand : ICliCommand
 {
