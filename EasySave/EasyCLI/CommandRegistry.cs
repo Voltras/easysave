@@ -11,7 +11,7 @@ public sealed class CommandRegistry
     {
         _byName[command.Name] = command;
 
-        foreach(var a in command.Aliases)
+        foreach (var a in command.Aliases)
         {
             _byName[a] = command;
         }

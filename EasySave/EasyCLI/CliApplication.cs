@@ -1,6 +1,6 @@
-using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
+using System.Globalization;
 
 namespace EasyCli;
 
@@ -50,13 +50,27 @@ public abstract class CliApplication
         }
 
         // Mode interactif
+        console.WriteLine("""
+             /$$$$$$$$                                /$$$$$$                               
+            | $$_____/                               /$$__  $$                              
+            | $$        /$$$$$$   /$$$$$$$ /$$   /$$| $$  \__/  /$$$$$$  /$$    /$$ /$$$$$$ 
+            | $$$$$    |____  $$ /$$_____/| $$  | $$|  $$$$$$  |____  $$|  $$  /$$//$$__  $$
+            | $$__/     /$$$$$$$|  $$$$$$ | $$  | $$ \____  $$  /$$$$$$$ \  $$/$$/| $$$$$$$$
+            | $$       /$$__  $$ \____  $$| $$  | $$ /$$  \ $$ /$$__  $$  \  $$$/ | $$_____/
+            | $$$$$$$$|  $$$$$$$ /$$$$$$$/|  $$$$$$$|  $$$$$$/|  $$$$$$$   \  $/  |  $$$$$$$
+            |________/ \_______/|_______/  \____  $$ \______/  \_______/    \_/    \_______/
+                                           /$$  | $$                                        
+                                          |  $$$$$$/                                        
+                                           \______/                                         
+            """);
         console.WriteLine(text["shell.welcome"]);
         console.WriteLine(text["shell.hint"]);
 
         int lastCode = 0;
         while (shell.Running && !ct.IsCancellationRequested)
         {
-            var userInput = AnsiConsole.Prompt(new TextPrompt<string>("> ").AllowEmpty());
+            Console.Write("> ");
+            var userInput = Console.ReadLine();
             if (userInput is null)
                 break;
 

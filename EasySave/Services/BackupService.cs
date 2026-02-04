@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System;
-using System.IO; 
-using static EasySave.Models.BackupJob;
-using EasySave.Models;
+﻿using EasySave.Models;
 
 namespace EasySave.Services
 {
@@ -27,7 +21,7 @@ namespace EasySave.Services
                 throw new DirectoryNotFoundException("source directory not found");
 
             }
-        
+
 
             // On lance la boucle récursive
             CopyDirectory(backupJob.SourcePath, backupJob.TargetPath, backupJob.Type, backupJob);
@@ -49,7 +43,7 @@ namespace EasySave.Services
                 string fileName = Path.GetFileName(file);
                 string destFile = Path.Combine(targetDir, fileName);
 
-                CopyFile(file, destFile, type,backupJob);
+                CopyFile(file, destFile, type, backupJob);
             }
 
             string[] subDirs = Directory.GetDirectories(sourceDir);
@@ -100,7 +94,7 @@ namespace EasySave.Services
             catch (Exception ex)
             {
                 throw new FileNotFoundException($"Error on the File -> {sourceFile} : {ex.Message}");
-                
+
             }
         }
     }
