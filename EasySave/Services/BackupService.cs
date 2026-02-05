@@ -11,22 +11,18 @@ namespace EasySave.Services
             get { return _status; }
 
         }
-        public void ExecuteBackup(BackupJob backupJob)
+        public bool ExecuteBackup(BackupJob backupJob)
         {
-            Console.WriteLine($"demarrage du job  {backupJob.Name}");
 
             // On vérifie que la source existe, sinon on arrête tout
             if (!Directory.Exists(backupJob.SourcePath))
             {
-                throw new DirectoryNotFoundException("source directory not found");
+                return false;
 
             }
-
-
             // On lance la boucle récursive
             CopyDirectory(backupJob.SourcePath, backupJob.TargetPath, backupJob.Type, backupJob);
-
-            Console.WriteLine($"job {backupJob.Name} fini");
+            return true;
         }
 
         private void CopyDirectory(string sourceDir, string targetDir, BackupType type, BackupJob backupJob)
@@ -88,7 +84,6 @@ namespace EasySave.Services
                 if (copy)
                 {
                     File.Copy(sourceFile, destFile, true);
-                    Console.WriteLine($"[COPIE] {sourceFile} -> {destFile}");
                 }
             }
             catch (Exception ex)

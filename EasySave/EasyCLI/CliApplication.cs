@@ -50,7 +50,10 @@ public abstract class CliApplication
         }
 
         // Mode interactif
-        console.WriteLine("""
+        var panel = new Panel($"""
+            
+            [Cyan]
+            
              /$$$$$$$$                                /$$$$$$                               
             | $$_____/                               /$$__  $$                              
             | $$        /$$$$$$   /$$$$$$$ /$$   /$$| $$  \__/  /$$$$$$  /$$    /$$ /$$$$$$ 
@@ -62,9 +65,12 @@ public abstract class CliApplication
                                            /$$  | $$                                        
                                           |  $$$$$$/                                        
                                            \______/                                         
-            """);
-        console.WriteLine(text["shell.welcome"]);
-        console.WriteLine(text["shell.hint"]);
+            
+            {text["shell.welcome"]}
+            {text["shell.hint"]}
+            [/]
+            """).DoubleBorder().Expand().BorderColor(Color.Cyan);
+        console.Write(panel);
 
         int lastCode = 0;
         while (shell.Running && !ct.IsCancellationRequested)
