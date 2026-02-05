@@ -1,11 +1,12 @@
-﻿using EasySave.Models;
-using EasyLog;
+﻿using EasyLog;
+using EasySave.Models;
+using System.Globalization;
 
 namespace EasySave.Services
 {
     class BackupService
     {
-        private string _status = "";
+        private volatile string _status = "0%|0|0";
 
         private readonly JsonDailyEasyLog _logger;
 
@@ -88,9 +89,7 @@ namespace EasySave.Services
         private void UpdateProgress(long processed, long total)
         {
             double percentage = (total > 0) ? ((double)processed / total) * 100 : 100;
-
-            _status = $"{Math.Round(percentage, 2)}%|{processed}|{total}";
-
+            _status = string.Create(CultureInfo.InvariantCulture, $"{percentage:F2}%|{processed}|{total}");
         }
 
         private (long,long) CopyFile(string sourceFile, string destFile, BackupType type, BackupJob backupJob)
