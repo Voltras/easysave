@@ -6,26 +6,29 @@ namespace EasySave.Services
     class BackupService
     {
         private string _status = "";
-        public required JsonDailyEasyLog _logger;
+
+        private readonly JsonDailyEasyLog _logger;
 
         public string Status
         {
             get { return _status; }
-
         }
+
+        public BackupService()
+        {
+            // Utilise l'instance singleton partagée pour éviter d'ouvrir plusieurs handles sur le même fichier
+            _logger = JsonDailyEasyLogSingleton.GetInstance("backup_log.json");
+        }
+
         public void ExecuteBackup(BackupJob backupJob)
         {
             Console.WriteLine($"demarrage du job  {backupJob.Name}");
 
-            // On vérifie que la source existe, sinon on arrête tout
             if (!Directory.Exists(backupJob.SourcePath))
             {
                 throw new DirectoryNotFoundException("source directory not found");
-
             }
 
-
-            // On lance la boucle récursive
             CopyDirectory(backupJob.SourcePath, backupJob.TargetPath, backupJob.Type, backupJob);
 
             Console.WriteLine($"job {backupJob.Name} fini");
@@ -36,6 +39,7 @@ namespace EasySave.Services
             if (!Directory.Exists(targetDir))
             {
                 Directory.CreateDirectory(targetDir);
+                _logger.CreateLog(LogAction.CreateDirectory, sourceDir, targetDir, 0, 0);
             }
 
             string[] files = Directory.GetFiles(sourceDir);
@@ -47,12 +51,18 @@ namespace EasySave.Services
 
                 (long time,long bytes) = CopyFile(file, destFile, type, backupJob);
 
-                    if (time > 0){_logger.CreateLog(LogAction.Skip, file, destFile, time, bytes);}
-
-                    else if (time == -1){_logger.CreateLog(LogAction.Error, file, destFile, time, bytes);}
-
-                    else { _logger.CreateLog(LogAction.Transfer, file, destFile, time, bytes);}
-
+                if (time > 0)
+                {
+                    _logger.CreateLog(LogAction.Transfer, file, destFile, time, bytes);
+                }
+                else if (time == -1)
+                {
+                    _logger.CreateLog(LogAction.Error, file, destFile, time, bytes);
+                }
+                else
+                {
+                    _logger.CreateLog(LogAction.Skip, file, destFile, time, bytes);
+                }
             }
 
             string[] subDirs = Directory.GetDirectories(sourceDir);
@@ -96,7 +106,6 @@ namespace EasySave.Services
 
                 if (copy)
                 {
-
                     var watch = System.Diagnostics.Stopwatch.StartNew();
                     File.Copy(sourceFile, destFile, true);
                     long bytes = new FileInfo(destFile).Length;
@@ -104,15 +113,12 @@ namespace EasySave.Services
                     watch.Stop();
                     long time = watch.ElapsedMilliseconds;
                     return (time,bytes);
-
                 }
             }
             catch (Exception ex)
             {
+                // Retourner -1 indique une erreur 
                 return (-1,-1);
-                throw new Exception($"Error copying file {sourceFile} to {destFile}: {ex.Message}");
-
-
             }
             return (0,0);
         }
