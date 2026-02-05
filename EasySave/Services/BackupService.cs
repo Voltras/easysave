@@ -1,10 +1,12 @@
 ﻿using EasySave.Models;
+using EasyLog;
 
 namespace EasySave.Services
 {
     class BackupService
     {
         private string _status = "";
+        public required JsonDailyEasyLog _logger;
 
         public string Status
         {
@@ -43,7 +45,14 @@ namespace EasySave.Services
                 string fileName = Path.GetFileName(file);
                 string destFile = Path.Combine(targetDir, fileName);
 
-                CopyFile(file, destFile, type, backupJob);
+                (long time,long bytes) = CopyFile(file, destFile, type, backupJob);
+
+                    if (time > 0){_logger.CreateLog(LogAction.Skip, file, destFile, time, bytes);}
+
+                    else if (time == -1){_logger.CreateLog(LogAction.Error, file, destFile, time, bytes);}
+
+                    else { _logger.CreateLog(LogAction.Transfer, file, destFile, time, bytes);}
+
             }
 
             string[] subDirs = Directory.GetDirectories(sourceDir);
@@ -58,7 +67,7 @@ namespace EasySave.Services
             }
         }
 
-        private long CopyFile(string sourceFile, string destFile, BackupType type, BackupJob backupJob)
+        private (long,long) CopyFile(string sourceFile, string destFile, BackupType type, BackupJob backupJob)
         {
             try
             {
@@ -90,20 +99,22 @@ namespace EasySave.Services
 
                     var watch = System.Diagnostics.Stopwatch.StartNew();
                     File.Copy(sourceFile, destFile, true);
+                    long bytes = new FileInfo(destFile).Length;
                     Console.WriteLine($"[COPIE] {sourceFile} -> {destFile}");
                     watch.Stop();
                     long time = watch.ElapsedMilliseconds;
-                    return time;
+                    return (time,bytes);
 
                 }
             }
             catch (Exception ex)
             {
-                return -1;
+                return (-1,-1);
+                throw new Exception($"Error copying file {sourceFile} to {destFile}: {ex.Message}");
 
 
             }
-            return 0;
+            return (0,0);
         }
     }
 }
