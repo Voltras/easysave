@@ -1,4 +1,5 @@
 ﻿using EasySave.Models;
+using EasyLog;
 
 namespace EasySave.Services
 {
@@ -6,15 +7,21 @@ namespace EasySave.Services
     {
         private string _status = "";
 
+        private readonly JsonDailyEasyLog _logger;
+
         public string Status
         {
             get { return _status; }
+        }
 
+        public BackupService()
+        {
+            // Utilise l'instance singleton partagée pour éviter d'ouvrir plusieurs handles sur le même fichier
+            _logger = JsonDailyEasyLogSingleton.GetInstance("backup_log.json");
         }
         public bool ExecuteBackup(BackupJob backupJob)
         {
 
-            // On vérifie que la source existe, sinon on arrête tout
             if (!Directory.Exists(backupJob.SourcePath))
             {
                 return false;
@@ -30,6 +37,7 @@ namespace EasySave.Services
             if (!Directory.Exists(targetDir))
             {
                 Directory.CreateDirectory(targetDir);
+                _logger.CreateLog(LogAction.CreateDirectory, sourceDir, targetDir, 0, 0);
             }
 
             string[] files = Directory.GetFiles(sourceDir);
@@ -39,7 +47,20 @@ namespace EasySave.Services
                 string fileName = Path.GetFileName(file);
                 string destFile = Path.Combine(targetDir, fileName);
 
-                CopyFile(file, destFile, type, backupJob);
+                (long time,long bytes) = CopyFile(file, destFile, type, backupJob);
+
+                if (time > 0)
+                {
+                    _logger.CreateLog(LogAction.Transfer, file, destFile, time, bytes);
+                }
+                else if (time == -1)
+                {
+                    _logger.CreateLog(LogAction.Error, file, destFile, time, bytes);
+                }
+                else
+                {
+                    _logger.CreateLog(LogAction.Skip, file, destFile, time, bytes);
+                }
             }
 
             string[] subDirs = Directory.GetDirectories(sourceDir);
@@ -54,7 +75,7 @@ namespace EasySave.Services
             }
         }
 
-        private void CopyFile(string sourceFile, string destFile, BackupType type, BackupJob backupJob)
+        private (long,long) CopyFile(string sourceFile, string destFile, BackupType type, BackupJob backupJob)
         {
             try
             {
@@ -83,14 +104,16 @@ namespace EasySave.Services
 
                 if (copy)
                 {
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
                     File.Copy(sourceFile, destFile, true);
                 }
             }
             catch (Exception ex)
             {
-                throw new FileNotFoundException($"Error on the File -> {sourceFile} : {ex.Message}");
-
+                // Retourner -1 indique une erreur 
+                return (-1,-1);
             }
+            return (0,0);
         }
     }
 }
