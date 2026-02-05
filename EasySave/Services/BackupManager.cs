@@ -17,7 +17,7 @@ namespace EasySave.Services
 
             // simu :2 travaux de test Hardcodé pour test
 
-            BackupJobs.Add(new BackupJob("Travail 1", @"C:\Users\laara\OneDrive\Bureau\Seminaire science fondamentale de l'ingénieur\prosit 2", @"C:\Users\laara\OneDrive\Bureau\repo_de_copie", BackupType.Differential));
+            //BackupJobs.Add(new BackupJob("Travail 1", @"C:\Users\laara\OneDrive\Bureau\Seminaire science fondamentale de l'ingénieur\prosit 2", @"C:\Users\laara\OneDrive\Bureau\repo_de_copie", BackupType.Differential));
             //BackupJobs.Add(new BackupJob("Travail 2", @"C:\Users\laara\OneDrive\Bureau\english", @"C:\Users\laara\OneDrive\Bureau\Bloc_Csharp\Projet\TEST", BackupType.Full));
         }
 
@@ -115,7 +115,10 @@ namespace EasySave.Services
         {
             return BackupJobs;
         }
-
+        public string GetStatus()
+        {
+            return _backupService.Status;
+        }
         public void DeleteBackupJob(int index)
         {
             foreach (var backupjob in BackupJobs)

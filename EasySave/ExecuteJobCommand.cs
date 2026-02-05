@@ -2,6 +2,7 @@
 using EasySave.Models;
 using EasySave.Services;
 using Spectre.Console;
+using System.Globalization;
 
 public sealed class ExecuteJobCommand : ICliCommand
 {
@@ -23,18 +24,18 @@ public sealed class ExecuteJobCommand : ICliCommand
         bool sequential = args.Length > 0 && SequentialAliases.Contains(args[0]);
         if (!sequential)
         {
-            RunSingle(context, jobs);
+            RunSingle(context, jobs, ct);
             context.Console.MarkupLine(context.Text["executeJob.success"]);
             return Task.FromResult(0);
         }
 
-        RunSequentialRange(context, jobs);
+        RunSequentialRange(context, jobs, ct);
 
         context.Console.MarkupLine(context.Text["executeJob.success"]);
         return Task.FromResult(0);
     }
 
-    private void RunSingle(CommandContext context, List<BackupJob> jobs)
+    private void RunSingle(CommandContext context, List<BackupJob> jobs, CancellationToken ct)
     {
         RenderJobsTable(context, jobs, startInclusive: 0);
 
@@ -44,13 +45,15 @@ public sealed class ExecuteJobCommand : ICliCommand
                 .AddChoices(Enumerable.Range(1, jobs.Count))
                 .UseConverter(i => $"{i} - {jobs[i - 1].Name}")
         );
-        RunWithStatus(
+        RunWithProgress(
             context,
             $"{context.Text["status.runningJob"]} {jobs[choice - 1].Name}",
-            () => manager.RunJob(choice)
+            statusProvider: manager.GetStatus,
+            work: () => manager.RunJob(choice),
+            ct: ct
         );
     }
-    private void RunSequentialRange(CommandContext context, List<BackupJob> jobs)
+    private void RunSequentialRange(CommandContext context, List<BackupJob> jobs, CancellationToken ct)
     {
         context.Console.WriteLine(context.Text["table.executeJobDesc"]);
         RenderJobsTable(context, jobs, startInclusive: 0);
@@ -77,10 +80,12 @@ public sealed class ExecuteJobCommand : ICliCommand
                     .UseConverter(i => $"{i} - {jobs[i - 1].Name}")
                 );
 
-            RunWithStatus(
+            RunWithProgress(
                 context,
                 $"{context.Text["status.runningSeq"]} {startChoice} -> {endChoice}",
-                () => manager.RunSequential(startChoice, endChoice)
+                statusProvider: manager.GetStatus,
+                work: () => manager.RunSequential(startChoice, endChoice),
+                ct: ct
             );
         }
         else
@@ -105,11 +110,56 @@ public sealed class ExecuteJobCommand : ICliCommand
         return (SequentialAliases.Contains(argument.ToLowerInvariant()));
     }
 
-    private static void RunWithStatus(CommandContext context, string message, Action work)
+    private static void RunWithProgress(
+    CommandContext context,
+    string title,
+    Func<string> statusProvider,
+    Action work,
+    CancellationToken ct = default)
     {
-        context.Console.Status()
-            .Spinner(Spinner.Known.Aesthetic)
-            .SpinnerStyle(Color.Blue)
-            .Start(message, _ => work());
+        context.Console.Progress()
+            .AutoClear(false)
+            .Columns(
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn(),
+                new PercentageColumn(),
+                new SpinnerColumn()
+            )
+            .Start(ctx =>
+            {
+                var task = ctx.AddTask(title, maxValue: 1);
+                var worker = Task.Run(work, ct);
+                while (!worker.IsCompleted && !ct.IsCancellationRequested)
+                {
+                    var status = statusProvider();
+                    if (TryParseStatus(status, out _, out var processed, out var total) && total > 0)
+                    {
+                        task.MaxValue = total;
+                        task.Value = Math.Min(processed, total);
+                    }
+                }
+
+                worker.GetAwaiter().GetResult();
+
+                task.Value = task.MaxValue;
+            });
+    }
+    private static bool TryParseStatus(string? s, out double pct, out long processed, out long total)
+    {
+        pct = 0; processed = 0; total = 0;
+        if (string.IsNullOrWhiteSpace(s)) return false;
+
+        var parts = s.Split('|');
+        if (parts.Length < 3) return false;
+
+        var pctPart = parts[0].Trim().TrimEnd('%');
+        _ = double.TryParse(pctPart, NumberStyles.Float, CultureInfo.InvariantCulture, out pct);
+
+        if (!long.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out processed))
+            return false;
+        if (!long.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out total))
+            return false;
+
+        return true;
     }
 }

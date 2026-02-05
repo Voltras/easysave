@@ -1,11 +1,12 @@
-﻿using EasySave.Models;
-using EasyLog;
+﻿using EasyLog;
+using EasySave.Models;
+using System.Globalization;
 
 namespace EasySave.Services
 {
     class BackupService
     {
-        private string _status = "";
+        private volatile string _status = "0%|0|0";
 
         private readonly JsonDailyEasyLog _logger;
 
@@ -21,58 +22,74 @@ namespace EasySave.Services
         }
         public bool ExecuteBackup(BackupJob backupJob)
         {
-
             if (!Directory.Exists(backupJob.SourcePath))
             {
                 return false;
-
             }
-            // On lance la boucle récursive
-            CopyDirectory(backupJob.SourcePath, backupJob.TargetPath, backupJob.Type, backupJob);
+
+            DirectoryInfo di = new DirectoryInfo(backupJob.SourcePath);
+            long totalSize = di.SizeInfo(); 
+            long processedSize = 0;
+
+            CopyDirectory(backupJob.SourcePath, backupJob.TargetPath, backupJob.Type, backupJob, totalSize, ref processedSize);
+
+            _status = "Completed";
             return true;
         }
 
-        private void CopyDirectory(string sourceDir, string targetDir, BackupType type, BackupJob backupJob)
+        private void CopyDirectory(string sourceDir, string targetDir, BackupType type, BackupJob backupJob, long totalSize, ref long processedSize)
         {
+            // Création du dossier cible s'il n'existe pas
             if (!Directory.Exists(targetDir))
             {
                 Directory.CreateDirectory(targetDir);
                 _logger.CreateLog(LogAction.CreateDirectory, sourceDir, targetDir, 0, 0);
             }
 
+            // Traitement des fichiers du dossier actuel
             string[] files = Directory.GetFiles(sourceDir);
-
             foreach (string file in files)
             {
                 string fileName = Path.GetFileName(file);
                 string destFile = Path.Combine(targetDir, fileName);
 
-                (long time,long bytes) = CopyFile(file, destFile, type, backupJob);
+                long fileSize = new FileInfo(file).Length;
 
-                if (time > 0)
+                (long time, long bytes) = CopyFile(file, destFile, type, backupJob);
+
+                if (time > 0) // Succès du transfert
                 {
+                    processedSize += bytes;
+                    UpdateProgress(processedSize, totalSize);
                     _logger.CreateLog(LogAction.Transfer, file, destFile, time, bytes);
                 }
-                else if (time == -1)
+                else if (time == 0) // Fichier ignoré (Skip)
+                {
+
+                    processedSize += fileSize;
+                    UpdateProgress(processedSize, totalSize);
+                    _logger.CreateLog(LogAction.Skip, file, destFile, time, bytes);
+                }
+                else if (time == -1) // Erreur
                 {
                     _logger.CreateLog(LogAction.Error, file, destFile, time, bytes);
-                }
-                else
-                {
-                    _logger.CreateLog(LogAction.Skip, file, destFile, time, bytes);
                 }
             }
 
             string[] subDirs = Directory.GetDirectories(sourceDir);
-
             foreach (string subDir in subDirs)
             {
-                string dirName = new DirectoryInfo(subDir).Name;
-
+                string dirName = Path.GetFileName(subDir);
                 string nextTargetDir = Path.Combine(targetDir, dirName);
 
-                CopyDirectory(subDir, nextTargetDir, type, backupJob);
+                CopyDirectory(subDir, nextTargetDir, type, backupJob, totalSize, ref processedSize);
             }
+        }
+
+        private void UpdateProgress(long processed, long total)
+        {
+            double percentage = (total > 0) ? ((double)processed / total) * 100 : 100;
+            _status = string.Create(CultureInfo.InvariantCulture, $"{percentage:F2}%|{processed}|{total}");
         }
 
         private (long,long) CopyFile(string sourceFile, string destFile, BackupType type, BackupJob backupJob)
@@ -106,6 +123,11 @@ namespace EasySave.Services
                 {
                     var watch = System.Diagnostics.Stopwatch.StartNew();
                     File.Copy(sourceFile, destFile, true);
+                    long bytes = new FileInfo(destFile).Length;
+                    watch.Stop();
+                    long time = watch.ElapsedMilliseconds;
+
+                    return (time, bytes);
                 }
             }
             catch (Exception ex)
