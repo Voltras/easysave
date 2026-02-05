@@ -1,6 +1,7 @@
 using EasyCli;
 using EasySave.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Globalization;
 
 public sealed class EasySaveCliApp : CliApplication
@@ -37,6 +38,7 @@ public sealed class EasySaveCliApp : CliApplication
                 ["createJob.error"] = "Le type de sauvegarde renseigné est incorrect ou la liste d'attente a atteint le nombre maximum de sauvegardes ! (5 sauvegardes max)",
                 ["createJob.notEnoughArgs"] = "Vous n'avez pas entré assez d'arguments. Usage : add-job <nom> <source> <destination> <type (différentiel / complet)>",
                 ["executeJob.desc"] = "Exécute un ou des jobs dans la liste des jobs de copie. Usage: execute-job <Optionnel : sequentiel>",
+                ["executeJob.success"] = "[green]Le job a été exécuté avec succès.[/]",
                 ["error.NoAvailableJobs"] = "Aucun job disponible. Ajoutez en avec add-job. Usage : add-job <nom> <source> <destination> <type (différentiel / complet)>",
                 ["table.chooseJob"] = "Choisissez un job parmi la liste :",
                 ["table.startSequentialTitle"] = "Choisissez le premier job (séquentiel plage) :",
@@ -48,6 +50,7 @@ public sealed class EasySaveCliApp : CliApplication
                 ["removeJob.desc"] = "Supprime un job de la liste. Usage : remove-job <Argument optionnel pour nettoyer la liste entière : nettoyer>",
                 ["removeJob.argumentError"] = "L'argument renseigné est invalide. Usage : remove-job <Argument optionnel pour nettoyer la liste entière : nettoyer>",
                 ["removeJob.emptyList"] = "La liste est déjà vide !",
+                ["status.runningJob"] = "Copie en cours...",
             }
             : new Dictionary<string, string>
             {
@@ -74,6 +77,8 @@ public sealed class EasySaveCliApp : CliApplication
                 ["removeJob.desc"] = "Deletes a job from the pending list. Usage : remove-job <Optional argument to clear the whole list : clear>",
                 ["removeJob.argumentError"] = "The given argument is invalid. Usage : remove-job <Optional argument to clear the whole list : clear>",
                 ["removeJob.emptyList"] = "The list is already empty !",
+                ["status.runningJob"] = "Copying...",
+                ["executeJob.success"] = "[green]The job was successfully executed.[/]",
             };
 
         return new DictionaryText(strings, culture);

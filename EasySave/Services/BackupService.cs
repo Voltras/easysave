@@ -19,19 +19,17 @@ namespace EasySave.Services
             // Utilise l'instance singleton partagée pour éviter d'ouvrir plusieurs handles sur le même fichier
             _logger = JsonDailyEasyLogSingleton.GetInstance("backup_log.json");
         }
-
-        public void ExecuteBackup(BackupJob backupJob)
+        public bool ExecuteBackup(BackupJob backupJob)
         {
-            Console.WriteLine($"demarrage du job  {backupJob.Name}");
 
             if (!Directory.Exists(backupJob.SourcePath))
             {
-                throw new DirectoryNotFoundException("source directory not found");
+                return false;
+
             }
-
+            // On lance la boucle récursive
             CopyDirectory(backupJob.SourcePath, backupJob.TargetPath, backupJob.Type, backupJob);
-
-            Console.WriteLine($"job {backupJob.Name} fini");
+            return true;
         }
 
         private void CopyDirectory(string sourceDir, string targetDir, BackupType type, BackupJob backupJob)
@@ -108,11 +106,6 @@ namespace EasySave.Services
                 {
                     var watch = System.Diagnostics.Stopwatch.StartNew();
                     File.Copy(sourceFile, destFile, true);
-                    long bytes = new FileInfo(destFile).Length;
-                    Console.WriteLine($"[COPIE] {sourceFile} -> {destFile}");
-                    watch.Stop();
-                    long time = watch.ElapsedMilliseconds;
-                    return (time,bytes);
                 }
             }
             catch (Exception ex)

@@ -111,14 +111,6 @@ namespace EasySave.Services
             return true;
         }
 
-        public void ListAllJobs(List<BackupJob> BackupJobs)
-        {
-            foreach (var backupjob in BackupJobs)
-            {
-                Console.WriteLine($"Job Name: {backupjob.Name}, Source: {backupjob.SourcePath}, Target: {backupjob.TargetPath}, Type: {backupjob.Type}");
-            }
-
-        }
         public List<BackupJob> GetList()
         {
             return BackupJobs;

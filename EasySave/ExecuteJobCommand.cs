@@ -24,11 +24,13 @@ public sealed class ExecuteJobCommand : ICliCommand
         if (!sequential)
         {
             RunSingle(context, jobs);
+            context.Console.MarkupLine(context.Text["executeJob.success"]);
             return Task.FromResult(0);
         }
 
         RunSequentialRange(context, jobs);
 
+        context.Console.MarkupLine(context.Text["executeJob.success"]);
         return Task.FromResult(0);
     }
 
@@ -42,9 +44,11 @@ public sealed class ExecuteJobCommand : ICliCommand
                 .AddChoices(Enumerable.Range(1, jobs.Count))
                 .UseConverter(i => $"{i} - {jobs[i - 1].Name}")
         );
-
-        int index0 = choice;
-        manager.RunJob(index0);
+        RunWithStatus(
+            context,
+            $"{context.Text["status.runningJob"]} {jobs[choice - 1].Name}",
+            () => manager.RunJob(choice)
+        );
     }
     private void RunSequentialRange(CommandContext context, List<BackupJob> jobs)
     {
@@ -66,8 +70,6 @@ public sealed class ExecuteJobCommand : ICliCommand
                     .UseConverter(i => $"{i} - {jobs[i - 1].Name}")
                 );
 
-            int start0 = startChoice;
-
             int endChoice = context.Console.Prompt(
                 new SelectionPrompt<int>()
                     .Title(context.Text["table.endSequentialTitle"])
@@ -75,8 +77,11 @@ public sealed class ExecuteJobCommand : ICliCommand
                     .UseConverter(i => $"{i} - {jobs[i - 1].Name}")
                 );
 
-            int end0 = endChoice;
-            manager.RunSequential(start0, end0);
+            RunWithStatus(
+                context,
+                $"{context.Text["status.runningSeq"]} {startChoice} -> {endChoice}",
+                () => manager.RunSequential(startChoice, endChoice)
+            );
         }
         else
         {
@@ -98,5 +103,13 @@ public sealed class ExecuteJobCommand : ICliCommand
     private bool ParseArgument(string argument)
     {
         return (SequentialAliases.Contains(argument.ToLowerInvariant()));
+    }
+
+    private static void RunWithStatus(CommandContext context, string message, Action work)
+    {
+        context.Console.Status()
+            .Spinner(Spinner.Known.Aesthetic)
+            .SpinnerStyle(Color.Blue)
+            .Start(message, _ => work());
     }
 }
