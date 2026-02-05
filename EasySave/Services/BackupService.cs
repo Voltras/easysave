@@ -58,7 +58,7 @@ namespace EasySave.Services
             }
         }
 
-        private void CopyFile(string sourceFile, string destFile, BackupType type, BackupJob backupJob)
+        private long CopyFile(string sourceFile, string destFile, BackupType type, BackupJob backupJob)
         {
             try
             {
@@ -87,15 +87,23 @@ namespace EasySave.Services
 
                 if (copy)
                 {
+
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
                     File.Copy(sourceFile, destFile, true);
                     Console.WriteLine($"[COPIE] {sourceFile} -> {destFile}");
+                    watch.Stop();
+                    long time = watch.ElapsedMilliseconds;
+                    return time;
+
                 }
             }
             catch (Exception ex)
             {
-                throw new FileNotFoundException($"Error on the File -> {sourceFile} : {ex.Message}");
+                return -1;
+
 
             }
+            return 0;
         }
     }
 }
